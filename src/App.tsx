@@ -8,13 +8,14 @@ import * as todoService from './api/todos';
 import * as servises from './servises/buttons';
 import { ButtonProp } from './types/Button';
 
+import { ErrorMessage } from './components/ErrorMessage/ErrorMessage';
+
 export const App: React.FC = () => {
   const [todoTitle, setTodoTitle] = useState('');
   const [appliedTitle, setAppliedTitle] = useState('');
-  // const [todo, setTodo] = useState<Todo | null>(null);
   const [cheked, setChecked] = useState(false);
   const [loadContent, setLoadedContent] = useState<Todo[]>([]);
-  const [errorMessege, setErrorMessege] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [filteredBy, setFilteredBy] = useState<string>('All');
 
   useEffect(() => {
@@ -23,14 +24,13 @@ export const App: React.FC = () => {
       .then(response => {
         const initData = response;
 
-        if (response.length === 0) {
-          setErrorMessege('Not found any todos');
-        }
-
         setLoadedContent(initData);
       })
       .catch(error => {
-        setErrorMessege('Unable to load todos');
+        setErrorMessage('Unable to load todos');
+        setTimeout(() => {
+          setErrorMessage('');
+        }, 3000);
         throw error;
       });
   }, []);
@@ -68,8 +68,6 @@ export const App: React.FC = () => {
     };
 
     await todoService.postTodos(newTodo);
-
-    // setTodo(newTodo);
   };
 
   const filteredButtons: ButtonProp[] = servises.getButtons();
@@ -219,29 +217,7 @@ export const App: React.FC = () => {
         )}
       </div>
 
-      {/* DON'T use conditional rendering to hide the notification */}
-      {/* Add the 'hidden' class to hide the message smoothly */}
-      <div
-        data-cy="ErrorNotification"
-        className={classNames(
-          'notification is-danger is-light has-text-weight-normal',
-          {
-            hidden: errorMessege.length === 0,
-          },
-        )}
-      >
-        <button data-cy="HideErrorButton" type="button" className="delete" />
-        {/* show only one message at a time */}
-        {errorMessege}
-        {/* <br />
-        Title should not be empty
-        <br />
-        Unable to add a todo
-        <br />
-        Unable to delete a todo
-        <br />
-        Unable to update a todo */}
-      </div>
+      <ErrorMessage errorMessage={errorMessage} />
     </div>
   );
 };
